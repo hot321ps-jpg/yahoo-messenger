@@ -7,10 +7,28 @@ export default function ChatWindow({ user, onClose }) {
   ]);
   const [inputText, setInputText] = useState('');
   const [isBuzzing, setIsBuzzing] = useState(false);
+  const [isDomainExpanded, setIsDomainExpanded] = useState(false); // 控制特效狀態
   const chatEndRef = useRef(null);
 
   const sendMessage = () => {
     if (!inputText.trim()) return;
+    
+    // 彩蛋觸發判斷！
+    if (inputText.trim() === '領域展開') {
+      setIsDomainExpanded(true);
+      setMessages(prev => [...prev, 
+        { id: Date.now(), type: 'me', text: inputText, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) },
+        { id: Date.now() + 1, type: 'system-domain', text: '✦ 領 域 展 開 ✦' }
+      ]);
+      setInputText('');
+      return;
+    }
+
+    // 解除彩蛋
+    if (inputText.trim() === '解除') {
+      setIsDomainExpanded(false);
+    }
+
     setMessages([...messages, { 
       id: Date.now(), type: 'me', text: inputText, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
     }]);
@@ -25,11 +43,11 @@ export default function ChatWindow({ user, onClose }) {
     setMessages([...messages, { id: Date.now(), type: 'system', text: `<< 你傳送了一個「叮咚！」給 ${user.name} >>` }]);
   };
 
-  // 自動捲動到最新訊息
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   return (
-    <div className={`window ${isBuzzing ? 'buzzing' : ''}`} id="chat-window">
+    {/* 加上動態 Class 控制特效 */}
+    <div className={`window ${isBuzzing ? 'buzzing' : ''} ${isDomainExpanded ? 'domain-expansion-mode' : ''}`} id="chat-window">
       <div className="title-bar">
         <span>與 {user.name} 聊天中</span>
         <div className="window-controls"><span onClick={onClose}>X</span></div>
@@ -44,9 +62,11 @@ export default function ChatWindow({ user, onClose }) {
       <div className="chat-history">
         {messages.map(msg => (
           <div key={msg.id} className="message">
-            {msg.type === 'system' ? <span className="system">{msg.text}</span> : null}
-            {msg.type === 'me' ? <><span className="me">我: </span><span>{msg.text}</span></> : null}
-            {msg.type === 'sender' ? <><span className="sender">{user.name}: </span><span>{msg.text}</span></> : null}
+            {msg.type === 'system' && <span className="system">{msg.text}</span>}
+            {/* 特殊字體樣式 */}
+            {msg.type === 'system-domain' && <div className="system-domain">{msg.text}</div>}
+            {msg.type === 'me' && <><span className="me">我: </span><span>{msg.text}</span></>}
+            {msg.type === 'sender' && <><span className="sender">{user.name}: </span><span>{msg.text}</span></>}
             {msg.time && <span className="timestamp">{msg.time}</span>}
           </div>
         ))}
@@ -60,6 +80,7 @@ export default function ChatWindow({ user, onClose }) {
           value={inputText} 
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }}}
+          placeholder="輸入文字... (試著輸入「領域展開」)"
         />
         <div style={{paddingLeft: '5px', display: 'flex', alignItems: 'flex-end'}}>
           <button className="btn" onClick={sendMessage}>傳送</button>
