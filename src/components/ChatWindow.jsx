@@ -7,13 +7,12 @@ export default function ChatWindow({ user, onClose }) {
   ]);
   const [inputText, setInputText] = useState('');
   const [isBuzzing, setIsBuzzing] = useState(false);
-  const [isDomainExpanded, setIsDomainExpanded] = useState(false); // 控制特效狀態
+  const [isDomainExpanded, setIsDomainExpanded] = useState(false);
   const chatEndRef = useRef(null);
 
   const sendMessage = () => {
     if (!inputText.trim()) return;
     
-    // 彩蛋觸發判斷！
     if (inputText.trim() === '領域展開') {
       setIsDomainExpanded(true);
       setMessages(prev => [...prev, 
@@ -24,7 +23,6 @@ export default function ChatWindow({ user, onClose }) {
       return;
     }
 
-    // 解除彩蛋
     if (inputText.trim() === '解除') {
       setIsDomainExpanded(false);
     }
@@ -45,8 +43,8 @@ export default function ChatWindow({ user, onClose }) {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  // ⚠️ 已經把這裡的註解刪除，不會再報錯了！
   return (
-    {/* 加上動態 Class 控制特效 */}
     <div className={`window ${isBuzzing ? 'buzzing' : ''} ${isDomainExpanded ? 'domain-expansion-mode' : ''}`} id="chat-window">
       <div className="title-bar">
         <span>與 {user.name} 聊天中</span>
@@ -63,7 +61,6 @@ export default function ChatWindow({ user, onClose }) {
         {messages.map(msg => (
           <div key={msg.id} className="message">
             {msg.type === 'system' && <span className="system">{msg.text}</span>}
-            {/* 特殊字體樣式 */}
             {msg.type === 'system-domain' && <div className="system-domain">{msg.text}</div>}
             {msg.type === 'me' && <><span className="me">我: </span><span>{msg.text}</span></>}
             {msg.type === 'sender' && <><span className="sender">{user.name}: </span><span>{msg.text}</span></>}
